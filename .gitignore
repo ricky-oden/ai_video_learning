@@ -1,0 +1,40 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node.js and Next.js output
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Playwright output
+playwright-report/
+test-results/
+blob-report/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local databases, vector data, and runtime files
+*.db
+*.sqlite3
+*.log
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+
