@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { SiteNav } from "@/components/site-nav";
+import { AuthProvider } from "@/providers/auth-provider";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +16,12 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <SiteNav />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
