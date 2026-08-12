@@ -44,6 +44,7 @@ class User(Base):
     sessions: Mapped[list["AuthSession"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    question_runs: Mapped[list["QuestionRun"]] = relationship(back_populates="user")
 
 
 class AuthSession(Base):
@@ -222,3 +223,181 @@ class ChunkEmbedding(Base):
     )
 
     chunk: Mapped[TranscriptChunk] = relationship(back_populates="embedding")
+
+
+class QuestionRun(Base):
+    __tablename__ = "question_runs"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('PROCESSING', 'COMPLETED', 'REFUSED_INSUFFICIENT_EVIDENCE', "
+            "'REFUSED_OUT_OF_SCOPE', 'FAILED')",
+            name="ck_question_runs_status",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    question: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(48), nullable=False)
+    failure_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    user: Mapped[User] = relationship(back_populates="question_runs")
+    materials: Mapped[list["QuestionRunMaterial"]] = relationship(
+        back_populates="question_run", cascade="all, delete-orphan"
+    )
+    retrieval_run: Mapped["RetrievalRun | None"] = relationship(
+        back_populates="question_run", cascade="all, delete-orphan", uselist=False
+    )
+    answer: Mapped["Answer | None"] = relationship(
+        back_populates="question_run", cascade="all, delete-orphan", uselist=False
+    )
+
+
+class QuestionRunMaterial(Base):
+    __tablename__ = "question_run_materials"
+    __table_args__ = (UniqueConstraint("question_run_id", "material_id", name="uq_run_material"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    question_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("question_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    material_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("materials.id", ondelete="RESTRICT"), nullable=False
+    )
+
+    question_run: Mapped[QuestionRun] = relationship(back_populates="materials")
+
+
+class RetrievalRun(Base):
+    __tablename__ = "retrieval_runs"
+    __table_args__ = (UniqueConstraint("question_run_id", name="uq_retrieval_run_question_run"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    question_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("question_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    provider_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    provider_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    dimensions: Mapped[int] = mapped_column(Integer, nullable=False)
+    top_k: Mapped[int] = mapped_column(Integer, nullable=False)
+    policy_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    lexical_overlap_threshold: Mapped[float] = mapped_column(nullable=False)
+    cosine_distance_threshold: Mapped[float] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    question_run: Mapped[QuestionRun] = relationship(back_populates="retrieval_run")
+    results: Mapped[list["RetrievalResult"]] = relationship(
+        back_populates="retrieval_run", cascade="all, delete-orphan"
+    )
+
+
+class RetrievalResult(Base):
+    __tablename__ = "retrieval_results"
+    __table_args__ = (
+        UniqueConstraint("retrieval_run_id", "rank", name="uq_retrieval_result_rank"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    retrieval_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("retrieval_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    chunk_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("transcript_chunks.id", ondelete="RESTRICT"), nullable=False
+    )
+    rank: Mapped[int] = mapped_column(Integer, nullable=False)
+    distance: Mapped[float] = mapped_column(nullable=False)
+    lexical_overlap_ratio: Mapped[float] = mapped_column(nullable=False)
+    is_selected: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    retrieval_run: Mapped[RetrievalRun] = relationship(back_populates="results")
+
+
+class Answer(Base):
+    __tablename__ = "answers"
+    __table_args__ = (UniqueConstraint("question_run_id", name="uq_answer_question_run"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    question_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("question_runs.id", ondelete="CASCADE"), nullable=False
+    )
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    provider_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    provider_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    question_run: Mapped[QuestionRun] = relationship(back_populates="answer")
+    citations: Mapped[list["AnswerCitation"]] = relationship(
+        back_populates="answer", cascade="all, delete-orphan"
+    )
+    feedback: Mapped[list["AnswerFeedback"]] = relationship(
+        back_populates="answer", cascade="all, delete-orphan"
+    )
+
+
+class AnswerCitation(Base):
+    __tablename__ = "answer_citations"
+    __table_args__ = (
+        UniqueConstraint("answer_id", "display_order", name="uq_answer_citation_order"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    answer_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("answers.id", ondelete="CASCADE"), nullable=False
+    )
+    retrieval_result_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("retrieval_results.id", ondelete="RESTRICT"), nullable=False
+    )
+    transcript_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("transcript_versions.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    chunk_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("transcript_chunks.id", ondelete="RESTRICT"), nullable=False
+    )
+    material_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("materials.id", ondelete="RESTRICT"), nullable=False
+    )
+    video_path_snapshot: Mapped[str] = mapped_column(String(500), nullable=False)
+    start_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    text_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
+    display_order: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    answer: Mapped[Answer] = relationship(back_populates="citations")
+
+
+class AnswerFeedback(Base):
+    __tablename__ = "answer_feedback"
+    __table_args__ = (
+        UniqueConstraint("answer_id", "user_id", name="uq_answer_feedback_user"),
+        CheckConstraint("rating IN ('UP', 'DOWN')", name="ck_answer_feedback_rating"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    answer_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("answers.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    rating: Mapped[str] = mapped_column(String(8), nullable=False)
+    comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    answer: Mapped[Answer] = relationship(back_populates="feedback")
