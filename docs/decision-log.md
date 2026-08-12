@@ -44,3 +44,39 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 - 外部動画・字幕サービス
 - 課金、本番監視、本番デプロイ
 - 初期対象外機能の追加
+
+## DEC-004: Phase 1開発基盤の固定versionと構成
+
+- 日付: 2026-08-12
+- 状態: 承認・検証済み
+- 決定者: ユーザー（固定値）、Codex（承認範囲内の依存patch version固定）
+- 対象要件: `SYS-001`, `SYS-002`, `SYS-003`, `DB-001`
+- Docker image:
+  - `node:22.23.2-alpine`（resolved digest `sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32`）
+  - `python:3.12.13-slim`（resolved digest `sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36`）
+  - `pgvector/pgvector:0.8.1-pg16-trixie`（resolved digest `sha256:1e4956185a7fd9306a41ee759a7b4329c4faf9a2bb91a1d01437310c97002433`）
+- frontend runtime依存:
+  - Next.js 16.3.0、React/React DOM 19.2.8
+- frontend development/test依存:
+  - TypeScript 5.9.3、Vitest 4.1.10、Playwright 1.58.2
+  - React Testing Library 16.3.2、jest-dom 7.0.1、jsdom 29.1.1
+  - ESLint 9.39.5、eslint-config-next 16.3.0、Prettier 3.9.6
+  - `@types/node` 22.20.1、`@types/react` 19.2.18、`@types/react-dom` 19.2.4
+  - transitive依存は`frontend/package-lock.json`で固定する。
+- backend runtime依存:
+  - FastAPI 0.141.1、Starlette 1.6.0、Uvicorn 0.52.1
+  - Pydantic 2.13.4、pydantic-settings 2.15.0、pydantic-core 2.46.4
+  - SQLAlchemy 2.0.52、Alembic 1.19.1
+  - psycopg/psycopg-binary 3.3.4、pgvector 0.4.2、numpy 2.5.2
+  - その他runtime transitive依存も`backend/requirements.txt`へ完全固定する。
+- backend development/test依存:
+  - pytest 9.1.1、Ruff 0.16.2、httpx2/httpcore2 2.7.0
+  - その他development/test transitive依存も`backend/requirements-dev.txt`へ完全固定する。
+- Compose:
+  - project `ai-video-learning`
+  - frontend `3001:3000`、backend `8003:8000`、DB host port非公開
+  - 開発DB `db:5432/ai_video_learning`はnamed volume
+  - test DB `test-db:5432/ai_video_learning_test`はprofile + tmpfs
+  - frontend/backendは非root user
+- migration: Alembicでpgvector extensionを作成・削除し、業務tableは作成しない。
+- 理由: Phase 1を再現可能にし、Phase 2以降の業務機能や外部providerを混入させないため。

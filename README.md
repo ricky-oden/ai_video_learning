@@ -2,7 +2,16 @@
 
 美容師向け動画教育・AI学習支援サービスを題材に、通常の動画学習機能と、根拠付きRAGの処理境界を学ぶためのリポジトリです。
 
-現在の計画バージョンは `AI-LEARNING-V1.0` です。現時点では計画文書のみが存在し、アプリケーション、依存関係、Docker、migration、CIは未実装です。
+現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 1のNext.js、FastAPI、PostgreSQL/pgvector、Docker Compose基盤まで実装・検証済みです。認証、動画教材、字幕、RAG、provider、streamは未実装です。
+
+## 固定runtime
+
+- Node.js `22.23.2`、npm `10.9.8`
+- Python `3.12.13`
+- PostgreSQL 16 + pgvector `0.8.1`
+- frontend `http://localhost:3001`
+- backend `http://localhost:8003`
+- ブラウザのAPI入口 `/api/v1`（Next.jsからCompose内`backend:8000`へ転送）
 
 ## 初期スコープ
 
@@ -16,6 +25,71 @@
 - 検索、根拠、抑止、応答時間、操作成功の評価
 
 OpenAI API、外部embedding API、外部動画・字幕APIは初期スコープに含みません。OpenAI SDKやAPI keyも使用しません。
+
+## 起動
+
+```bash
+docker compose config
+docker compose build frontend backend
+docker compose up -d --wait db
+docker compose run --rm backend alembic upgrade head
+docker compose up -d --wait backend frontend
+docker compose ps
+```
+
+DB portはhostへ公開しません。開発DB `ai_video_learning`はnamed volumeへ保存されます。
+
+## test DBとbackend検証
+
+test DBはprofile付きtmpfsで、`test-db:5432/ai_video_learning_test`以外をpytestに許可しません。pytest開始時に`TEST_DATABASE_URL`を検証し、その値をアプリ本体の`DATABASE_URL`へ強制設定します。開発DBへのfallbackはありません。
+
+```bash
+docker compose --profile test up -d --wait test-db
+docker compose run --rm \
+  -e TEST_DATABASE_URL=postgresql+psycopg://ai_learning_test:test-only@test-db:5432/ai_video_learning_test \
+  backend pytest
+docker compose run --rm backend ruff check .
+docker compose run --rm backend ruff format --check .
+```
+
+test DBへmigrationを適用する場合も、接続先を明示します。
+
+```bash
+docker compose run --rm \
+  -e DATABASE_URL=postgresql+psycopg://ai_learning_test:test-only@test-db:5432/ai_video_learning_test \
+  backend alembic upgrade head
+```
+
+## frontend検証
+
+```bash
+docker compose exec -T frontend npm test
+docker compose exec -T frontend npm run lint
+docker compose exec -T frontend npm run format:check
+docker compose exec -T frontend npm run typecheck
+docker build --target build --tag ai-video-learning-frontend-build-audit ./frontend
+```
+
+稼働中のNext.js dev serverと同じ`.next`へproduction buildを同時出力しないため、buildは隔離したDocker build stageで検証します。
+
+## healthcheck
+
+- direct backend: `http://localhost:8003/api/v1/health`
+- Next.js同一origin: `http://localhost:3001/api/v1/health`
+
+成功時はDBへの`SELECT 1`を含めて次を返します。
+
+```json
+{"status":"ok","database":"ok"}
+```
+
+## 停止
+
+```bash
+docker compose --profile test down
+```
+
+開発DBのnamed volumeを削除する`down -v`は、明示的に初期化したい場合だけ使用してください。
 
 ## 計画文書
 

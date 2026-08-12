@@ -8,25 +8,25 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### SYS-001 固定技術構成
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: Node.js 22系、npm、Next.js App Router、React、TypeScript、Python 3.12系、FastAPI、SQLAlchemy、Alembic、PostgreSQL 16系、pgvectorを使用する。
 - 受入条件: 実行環境とlockfileから各採用技術・major/minor方針を確認でき、README記載の再現手順が成功する。
 
 ### SYS-002 Python依存の分離
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: runtime依存とdevelopment/test依存を分離する。
 - 受入条件: runtime環境にtest専用依存を入れずbackendが起動でき、development/test環境でpytest等を実行できる。
 
 ### SYS-003 Docker Compose分離
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: frontend、backend、dbをCompose serviceとして分離し、project名を`ai-video-learning`、host portを3001/8003、DB内部接続を`db:5432`とする。
 - 受入条件: 各serviceのhealthcheckが成功し、frontendからbackend、backendからDBへ接続できる。
 
 ### DB-001 pgvector有効化
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: PostgreSQL 16系でpgvector extensionと必要なschemaをAlembic管理する。
 - 受入条件: 新規DBへのmigrationでvector列を作成でき、downgrade/upgrade方針がテストされる。
 
