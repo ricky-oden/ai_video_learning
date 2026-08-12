@@ -1,0 +1,7 @@
+{
+  "fixture_id": "invalid-sequence-v1",
+  "segments": [
+    {"sequence": 1, "start_ms": 0, "end_ms": 1000, "text": "検証用字幕です。"},
+    {"sequence": 3, "start_ms": 1000, "end_ms": 2000, "text": "sequenceが不正です。"}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "fixture_id": "hair-cut-basic-v1",
+  "segments": [
+    {"sequence": 1, "start_ms": 0, "end_ms": 1200, "text": "  シャンプー前に\t髪の状態を確認します。  "},
+    {"sequence": 2, "start_ms": 1200, "end_ms": 2400, "text": "お湯の温度を確認し、十分に予洗いします。"},
+    {"sequence": 3, "start_ms": 2400, "end_ms": 3600, "text": "泡を立てて、指の腹で頭皮を洗います。"},
+    {"sequence": 4, "start_ms": 3600, "end_ms": 4800, "text": "すすぎ残しがないよう丁寧に流します。"},
+    {"sequence": 5, "start_ms": 4800, "end_ms": 6000, "text": "タオルで水分をやさしく取ります。"}
+  ]
+}
