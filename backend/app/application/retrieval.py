@@ -13,6 +13,8 @@ from app.providers.base import EmbeddingProvider
 class RetrievedChunk:
     chunk_id: uuid.UUID
     material_id: uuid.UUID
+    transcript_version_id: uuid.UUID
+    video_path: str
     text: str
     start_ms: int
     end_ms: int
@@ -30,7 +32,13 @@ def search_chunks(
     query_vector = provider.embed_many([normalize_text(question)])[0]
     distance = ChunkEmbedding.embedding.cosine_distance(query_vector)
     statement = (
-        select(TranscriptChunk, TranscriptVersion.material_id, distance.label("distance"))
+        select(
+            TranscriptChunk,
+            TranscriptVersion.material_id,
+            TranscriptVersion.id,
+            Material.video_path,
+            distance.label("distance"),
+        )
         .join(TranscriptVersion, TranscriptChunk.transcript_version_id == TranscriptVersion.id)
         .join(Material, TranscriptVersion.material_id == Material.id)
         .join(ChunkEmbedding, ChunkEmbedding.chunk_id == TranscriptChunk.id)
@@ -55,10 +63,14 @@ def search_chunks(
         RetrievedChunk(
             chunk_id=chunk.id,
             material_id=material_id,
+            transcript_version_id=transcript_version_id,
+            video_path=video_path,
             text=chunk.text,
             start_ms=chunk.start_ms,
             end_ms=chunk.end_ms,
             distance=float(chunk_distance),
         )
-        for chunk, material_id, chunk_distance in db.execute(statement).all()
+        for chunk, material_id, transcript_version_id, video_path, chunk_distance in db.execute(
+            statement
+        ).all()
     ]

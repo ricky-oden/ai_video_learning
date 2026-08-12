@@ -49,3 +49,12 @@ def require_admin(auth: CurrentAuth) -> AuthContext:
 
 
 AdminAuth = Annotated[AuthContext, Depends(require_admin)]
+
+
+def require_premium(auth: CurrentAuth) -> AuthContext:
+    if auth.user.role not in {"PREMIUM", "ADMIN"}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return auth
+
+
+PremiumAuth = Annotated[AuthContext, Depends(require_premium)]

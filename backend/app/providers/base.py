@@ -17,7 +17,19 @@ class EmbeddingProvider(Protocol):
     def embed_many(self, texts: Sequence[str]) -> list[list[float]]: ...
 
 
-class AnswerGenerationProvider(Protocol):
-    """Phase 4 contract boundary; no implementation is provided in Phase 3."""
+@dataclass(frozen=True)
+class EvidenceInput:
+    citation_id: str
+    text: str
 
-    def generate(self, question: str, evidence: Sequence[str]) -> str: ...
+
+@dataclass(frozen=True)
+class GeneratedAnswer:
+    body: str
+    citation_ids: tuple[str, ...]
+    provider_name: str
+    provider_version: str
+
+
+class AnswerGenerationProvider(Protocol):
+    def generate(self, question: str, evidence: Sequence[EvidenceInput]) -> GeneratedAnswer: ...
