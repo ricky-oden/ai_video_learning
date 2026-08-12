@@ -51,3 +51,39 @@ export type TranscriptVersion = {
   provider_version: string | null;
   dimensions: number | null;
 };
+
+export type Citation = {
+  id: string;
+  material_id: string;
+  transcript_version_id: string;
+  chunk_id: string;
+  video_path: string;
+  start_ms: number;
+  end_ms: number;
+  text_snapshot: string;
+  display_order: number;
+};
+
+export type GroundedAnswer = {
+  id: string;
+  body: string;
+  provider_name: string;
+  provider_version: string;
+  citations: Citation[];
+};
+
+export type QuestionRun = {
+  run_id: string;
+  question: string;
+  material_ids: string[];
+  status:
+    | "PROCESSING"
+    | "COMPLETED"
+    | "REFUSED_INSUFFICIENT_EVIDENCE"
+    | "REFUSED_OUT_OF_SCOPE"
+    | "FAILED";
+  failure_code: string | null;
+  created_at: string;
+  completed_at: string | null;
+  answer: GroundedAnswer | null;
+};

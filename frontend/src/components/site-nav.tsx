@@ -12,6 +12,8 @@ export function SiteNav() {
     <nav className="site-nav" aria-label="メインナビゲーション">
       <Link href="/">ホーム</Link>
       {user && <Link href="/materials">教材</Link>}
+      {user && <Link href="/history">履歴</Link>}
+      {user && user.role !== "MEMBER" && <Link href="/ask">質問</Link>}
       {user?.role === "ADMIN" && <Link href="/admin/materials">管理</Link>}
       {user ? (
         <button

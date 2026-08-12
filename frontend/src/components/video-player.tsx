@@ -4,7 +4,15 @@ import { useRef, useState } from "react";
 
 import { seekVideo } from "@/lib/video/seek";
 
-export function VideoPlayer({ src, title }: { src: string; title: string }) {
+export function VideoPlayer({
+  src,
+  title,
+  initialStartMs = 0,
+}: {
+  src: string;
+  title: string;
+  initialStartMs?: number;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [seconds, setSeconds] = useState(2);
   return (
@@ -15,6 +23,11 @@ export function VideoPlayer({ src, title }: { src: string; title: string }) {
         controls
         preload="metadata"
         aria-label={`${title}の動画`}
+        onLoadedMetadata={() => {
+          if (videoRef.current && initialStartMs > 0) {
+            seekVideo(videoRef.current, initialStartMs);
+          }
+        }}
       >
         <source src={src} type="video/mp4" />
       </video>

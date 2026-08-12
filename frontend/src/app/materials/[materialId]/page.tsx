@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuthGate } from "@/components/auth-gate";
@@ -10,6 +10,8 @@ import type { Material } from "@/lib/api/types";
 
 export default function MaterialDetailPage() {
   const { materialId } = useParams<{ materialId: string }>();
+  const searchParams = useSearchParams();
+  const startMs = Number(searchParams.get("start_ms") ?? 0);
   const [material, setMaterial] = useState<Material | null>(null);
   const [error, setError] = useState("");
 
@@ -40,7 +42,11 @@ export default function MaterialDetailPage() {
             <p className="eyebrow">{material.required_role}</p>
             <h1>{material.title}</h1>
             <p>{material.description}</p>
-            <VideoPlayer src={material.video_path} title={material.title} />
+            <VideoPlayer
+              src={material.video_path}
+              title={material.title}
+              initialStartMs={Number.isFinite(startMs) ? startMs : 0}
+            />
           </>
         )}
       </AuthGate>
