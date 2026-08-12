@@ -27,3 +27,21 @@ test("premium user logs in, opens the material list, and views a local video", a
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("link", { name: "ログイン" })).toBeVisible();
 });
+
+test("admin imports a local transcript and sees READY counts", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("メールアドレス").fill("admin@example.com");
+  await page.getByLabel("パスワード").fill("Learning123!");
+  await page.getByRole("button", { name: "ログイン" }).click();
+  await page.goto("/admin/materials");
+
+  const row = page.getByRole("row", { name: /シャンプーの基本/ });
+  await row.getByRole("button", { name: "字幕を取り込む" }).click();
+  await expect(row.getByText("READY")).toBeVisible();
+  await expect(
+    row.getByText(/segment 5 \/ chunk 2 \/ embedding 2/),
+  ).toBeVisible();
+  await expect(row.getByText(/deterministic-local/)).toBeVisible();
+});
