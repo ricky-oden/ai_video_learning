@@ -4,7 +4,7 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ## 質問処理
 
-Phase 3では質問の正規化・fake embeddingと、READY/current/認可教材に限定したpgvector検索serviceまで実装済みである。question run、検索結果保存、十分性判定、回答生成以降はPhase 4以降である。
+Phase 4では同期question run、検索結果保存、十分性判定、根拠限定fake回答、citation検証・保存まで実装済みである。SSE、中断、再生成はPhase 5で追加する。
 
 ```text
 POST question run
@@ -19,21 +19,20 @@ POST question run
    ├─ 教材外: refused_out_of_scope
    └─ 十分: 認可済み根拠をfake generatorへ渡す
 → provider citation検証
-→ SSE配信
 → answer・citation・snapshot保存
-→ completed
+→ terminal response
 ```
 
 ## 検索
 
 - query vectorとchunk vectorのprovider version・次元を一致させる。
 - SQL条件で教材、公開字幕version、ユーザー権限を絞ったうえで類似検索する。
-- `top_k`、距離関数、score threshold、policy versionをretrieval runへ記録する。
+- cosine distance、`top_k=5`、provider metadata、policy versionとthreshold、順位・distance・選択状態をretrieval run/resultへ記録する。
 - 認可できないchunkを取得後に隠すだけの実装は不可。provider入力にも含めない。
 
 ## 根拠十分性
 
-初期判定は決定論的規則と固定fixtureで検証する。候補となる入力は、上位score、条件を満たすchunk数、対象教材、質問と教材語彙の対応である。具体的な数値はfake vectorと評価fixtureを実装した際に固定する。
+初期判定`evidence-policy-v1`は正規化済み文字bigram overlapを使う。overlap 0は教材外、overlap ratio 0.20未満またはbest cosine distance 0.55超は根拠不足、両条件を満たす場合は上位最大3chunkを選択する。境界値は人が固定したfixtureで検証し、AIによる自動閾値変更は行わない。
 
 判定結果には次を保存する。
 

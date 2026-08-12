@@ -112,3 +112,16 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 - 検索境界: 質問を同じfake空間へ変換し、READY/current、active教材、role、指定教材をSQL条件で絞ってpgvector検索する。
 - Phase境界: AnswerGenerationProviderはinterfaceのみ。回答、十分性判定、citation、run保存、SSEは作成しない。
 - 外部性: OpenAI SDK/API keyおよび外部AI・embedding・字幕API通信はない。
+
+## DEC-007: Phase 4同期式根拠付き質問応答
+
+- 日付: 2026-08-12
+- 状態: 承認・検証済み
+- 決定者: ユーザー（固定仕様）、Codex（承認範囲内の実装詳細）
+- API: `POST /api/v1/question-runs`はPhase 4では同期完了後のterminal状態を返し、SSE endpoint、`events_url`、cancel、再生成を追加しない。
+- 検索: Phase 3と同じ`deterministic-local/hash-char-ngram-v1` 32次元、cosine distance、`top_k=5`。READY/currentかつ指定・認可済み教材だけをSQLで検索する。
+- 十分性: `evidence-policy-v1`。正規化済み文字bigram overlap 0は教材外、overlap ratio 0.20未満またはbest cosine distance 0.55超は根拠不足、選択根拠は最大3chunkとする。人が固定したfixtureが境界値を満たしたため初期目安から閾値を変更していない。
+- 回答: `deterministic-local/grounded-extractive-v1`。選択済みchunk textだけを決定論的に連結しcitation IDを返す。許可集合外citationはrunをFAILEDにし、completed answerを保存しない。
+- 保持: 検索条件、provider metadata、順位・distance・選択、字幕version、chunk、material、local video path、時刻、text snapshotを保存し、新字幕公開後も旧citationを再現する。
+- frontend: `/ask`と`/history`、terminal状態別表示、完了回答コピー、citation seek、所有者feedbackを実装する。MEMBERはUIと直接APIの双方で質問不可。
+- 外部性: OpenAI SDK/API key、外部AI・embedding・動画・字幕API通信、SSEは追加しない。依存versionの追加変更はない。

@@ -2,7 +2,7 @@
 
 美容師向け動画教育・AI学習支援サービスを題材に、通常の動画学習機能と、根拠付きRAGの処理境界を学ぶためのリポジトリです。
 
-現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 3の字幕取込、決定論的fake embedding、pgvector検索境界まで実装・検証済みです。質問回答、根拠判定、citation、streamは未実装です。
+現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 4の同期式根拠付き質問応答、回答抑止、citation、履歴・feedbackまで実装・検証済みです。SSE、中断、再生成はPhase 5の未実装範囲です。
 
 ## 固定runtime
 
@@ -49,6 +49,8 @@ docker compose run --rm backend python -m app.seed
 
 ADMINは`/admin/materials`から許可済みJSON字幕fixtureを取り込めます。入力されたfixture IDはbackendの固定mappingで解決され、任意ファイルパスとして扱いません。embeddingは外部APIを使わない32次元の`deterministic-local/hash-char-ngram-v1`です。
 
+PREMIUM/ADMINは`/ask`から1〜5教材を選んで同期式の質問を実行できます。回答は`deterministic-local/grounded-extractive-v1`が選択済み字幕chunkだけから作り、根拠不足または教材外ではgeneratorを呼びません。回答citationは字幕version、chunk、local動画path、時刻、回答時text snapshotを保持し、`/history`から再確認・評価できます。
+
 tokenは8時間有効なopaque値で、DBにはSHA-256 hashだけを保存します。frontendは学習目的でtokenをlocalStorageへ保存するため、XSSがあるとtokenを読み取られるリスクがあります。本番用認証方式ではありません。
 
 ## test DBとbackend検証
@@ -79,7 +81,7 @@ docker compose exec -T frontend npm test
 docker compose exec -T frontend npm run lint
 docker compose exec -T frontend npm run format:check
 docker compose exec -T frontend npm run typecheck
-docker build --target build --tag ai-video-learning-frontend-build-audit ./frontend
+docker compose run --rm -e NODE_ENV=production frontend npm run build
 docker compose --profile e2e run --rm e2e
 ```
 

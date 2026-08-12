@@ -2,7 +2,7 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-prefixは`/api/v1`とする。認証・教材・health・ADMIN字幕APIはPhase 3までに実装済みで、question run以降は未実装の設計である。
+prefixは`/api/v1`とする。Phase 4までに認証、教材、字幕管理、同期question run、履歴、feedback APIを実装済みである。SSE、中断、再生成APIはPhase 5まで追加しない。
 
 ## 共通
 
@@ -30,17 +30,14 @@ prefixは`/api/v1`とする。認証・教材・health・ADMIN字幕APIはPhase 
 
 動画はNext.jsの`public/media`配下の固定fixtureを同一originで返す。APIは任意path入力を受け付けない。
 
-## question runとstream
+## Phase 4同期question run
 
 | method/path | role | 概要 | 要件 |
 |---|---|---|---|
-| `POST /question-runs` | PREMIUM, ADMIN | 質問run作成 | STR-001 |
-| `GET /question-runs/{run_id}` | 所有者/ADMIN | run状態取得 | HIS-001 |
-| `GET /question-runs/{run_id}/events` | 所有者/ADMIN | SSE購読 | STR-002, STR-003 |
-| `POST /question-runs/{run_id}/cancel` | 所有者/ADMIN | 明示中断 | STR-005 |
-| `POST /answers/{answer_id}/regenerations` | 所有者/ADMIN | 新runとして再生成 | STR-007 |
-| `GET /questions/history` | 認証済み | 自分の履歴 | HIS-001 |
-| `POST /answers/{answer_id}/feedback` | 閲覧可能者 | 評価登録/更新 | HIS-003 |
+| `POST /api/v1/question-runs` | PREMIUM, ADMIN | 同期処理しterminal runを返す | RAG-005〜RAG-010 |
+| `GET /api/v1/question-runs/{run_id}` | 所有者/ADMIN | run状態取得 | HIS-001 |
+| `GET /api/v1/questions/history` | 認証済み | 自分の履歴 | HIS-001 |
+| `POST /api/v1/answers/{answer_id}/feedback` | 回答所有者 | 評価登録/更新 | HIS-003 |
 
 question run request案:
 
@@ -51,17 +48,30 @@ question run request案:
 }
 ```
 
-response案:
+Phase 4 response概要:
 
 ```json
 {
-  "run_id": "run_opaque_id",
-  "status": "submitted",
-  "events_url": "/api/v1/question-runs/run_opaque_id/events"
+  "run_id": "uuid",
+  "question": "カラー剤を塗布する順番は？",
+  "material_ids": ["uuid"],
+  "status": "COMPLETED",
+  "failure_code": null,
+  "answer": {
+    "id": "uuid",
+    "body": "選択済み根拠だけから構成した回答",
+    "provider_name": "deterministic-local",
+    "provider_version": "grounded-extractive-v1",
+    "citations": []
+  }
 }
 ```
 
-run terminal statusは`completed`, `refused_insufficient_evidence`, `refused_out_of_scope`, `cancelled`, `failed`とする。
+Phase 4 terminal statusは`COMPLETED`, `REFUSED_INSUFFICIENT_EVIDENCE`, `REFUSED_OUT_OF_SCOPE`, `FAILED`とする。requestはquestion 1〜500文字、material ID 1〜5件、重複不可で、指定教材すべてをbackendが認可する。
+
+## Phase 5予定API
+
+`GET /api/v1/question-runs/{run_id}/events`、cancel、regenerationは未実装である。Phase 4 responseに`events_url`は含めない。
 
 ## 管理者
 

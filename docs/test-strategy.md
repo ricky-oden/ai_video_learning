@@ -2,9 +2,9 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-Phase 3までの認証・教材・字幕・embedding・検索境界テストは実装・実行済み。Phase 4以降は未実装である。ローカルfixture、fake embedding、test PostgreSQL/pgvectorだけで完結し、外部API通信を行わない。
+Phase 4までの認証、教材、字幕、embedding、検索、根拠判定、同期回答、citation、履歴・feedbackテストは実装・実行済み。Phase 5のstream、中断、再生成は未実装である。ローカルfixture、fake provider、test PostgreSQL/pgvectorだけで完結し、外部API通信を行わない。
 
-Phase 3実績: backend pytest 38件、frontend Vitest 9件、Playwright 2件。migration clean upgrade/downgrade/再upgradeとAlembic checkも成功した。
+Phase 4実績: backend pytest 49件、frontend Vitest 16件、Playwright 3件。migration clean upgrade/downgrade/再upgrade、pgvector extension/vector(32)、Alembic check、Next.js production buildも成功した。
 
 ## frontend: Vitest + React Testing Library
 

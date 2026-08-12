@@ -2,7 +2,7 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-認証・教材・字幕・embedding tableはPhase 3までに実装済み。質問・回答以降のtableは未実装である。IDはUUID、時刻はUTC、動画位置は整数millisecondで保持する。
+Phase 4までの認証、教材、字幕、embedding、質問、検索、回答、citation、feedback tableを実装済みである。IDはUUID、時刻はUTC、動画位置は整数millisecondで保持する。
 
 ## 認証
 
@@ -34,13 +34,13 @@ DBには原則としてtokenの照合用hashを保存し、平文tokenの永続�
 
 ## 質問、検索、回答
 
-- `questions`: id, user_id, text, created_at
-- `question_runs`: id, question_id, user_id, status, explicit_cancel_requested_at, disconnected_at, started_at, completed_at, failure_code
-- `retrieval_runs`: id, question_run_id, provider_name, provider_version, dimensions, top_k, policy_version, started_at, completed_at
-- `retrieval_results`: id, retrieval_run_id, chunk_id, rank, distance, is_selected
-- `answers`: id, question_run_id, parent_answer_id, body, provider_name, provider_version, generation_policy_version, created_at
-- `answer_citations`: id, answer_id, retrieval_result_id, transcript_version_id, chunk_id, video_id, start_ms, end_ms, text_snapshot, display_order
-- `answer_feedback`: id, answer_id, user_id, rating, reason_code, comment, created_at, updated_at
+- `question_runs`: id, user_id, question, status, failure_code, failure_message, created_at, completed_at
+- `question_run_materials`: question_run_id, material_id
+- `retrieval_runs`: id, question_run_id, embedding provider metadata, dimensions, top_k, policy_version, lexical_overlap_threshold, cosine_distance_threshold, created_at
+- `retrieval_results`: id, retrieval_run_id, chunk_id, rank, distance, lexical_overlap_ratio, is_selected
+- `answers`: id, question_run_id, body, provider_name, provider_version, created_at
+- `answer_citations`: id, answer_id, retrieval_result_id, transcript_version_id, chunk_id, material_id, video_path, start_ms, end_ms, text_snapshot, display_order
+- `answer_feedback`: id, answer_id, user_id, rating, comment, created_at, updated_at
 
 不変条件:
 
@@ -48,7 +48,7 @@ DBには原則としてtokenの照合用hashを保存し、平文tokenの永続�
 - citationは同じrunの認可済みretrieval resultだけを参照する。
 - citationは回答時snapshotを保持する。
 - refused/cancelled/failed runに正式なcompleted answerを作らない。
-- 再生成answerは`parent_answer_id`を持ち、元answerを変更しない。
+- Phase 5の再生成では親関係を追加し、元answerを変更しない。Phase 4では再生成を実装しない。
 
 ## 評価
 

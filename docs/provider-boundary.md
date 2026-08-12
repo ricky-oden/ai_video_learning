@@ -30,18 +30,18 @@ embed(texts, context)
 
 責務:
 
-- 質問と認可済み根拠から回答eventを生成する。
+- Phase 4では質問と認可済み根拠から同期回答を生成する。
 - 使用したcitation IDを明示する。
-- 中断signalを確認する。
-- provider名、version、finish reasonを返す。
+- provider名、versionを返す。
+- Phase 5でstream eventと中断signalの境界を拡張する。
 
 概念契約:
 
 ```text
-generate(question, evidence, policy, cancellation)
-→ content_delta events
-→ citation events
-→ completed | cancelled | failed
+generate(question, evidence)
+→ body
+→ citation_ids
+→ provider metadata
 ```
 
 providerは検索、認可、十分性判定、DB保存を担当しない。
@@ -51,9 +51,9 @@ providerは検索、認可、十分性判定、DB保存を担当しない。
 - Phase 3 embeddingは`deterministic-local/hash-char-ngram-v1`、32次元とする。
 - 正規化済み文字unigram/bigramをSHA-256で固定bucketへ割り当て、有限vectorへL2正規化する。
 - Python組込み`hash()`のようにprocessごとに変わり得るものは使用しない。
-- 回答provider実装はPhase 4以降であり、Phase 3ではinterfaceだけを定義する。
+- Phase 4回答は`deterministic-local/grounded-extractive-v1`とし、選択済み根拠textを順番どおり決定論的に連結する。
 - citationは渡されたIDだけを返せる。
-- scenario fixtureでevent分割、遅延、途中失敗、中断点を固定できる。
+- event分割、遅延、中断点を持つscenario providerはPhase 5で実装する。
 
 ## contract test
 
