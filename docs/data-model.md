@@ -2,21 +2,20 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-全table・migrationは未実装。IDは外部へ連番を露出しない形式を基本とする。時刻はUTC、動画位置は整数millisecondで保持する。
+認証・教材tableはPhase 2で実装済み。Phase 3以降のtableは未実装である。IDはUUID、時刻はUTC、動画位置は整数millisecondで保持する。
 
 ## 認証
 
-- `users`: id, login_id, password_hash, role, is_active, created_at
-- `auth_tokens`: id, user_id, token_hash, issued_at, expires_at, revoked_at, last_used_at
+- `users`: id, email(unique), password_hash(Argon2id), role, is_active, created_at, updated_at
+- `auth_sessions`: id, user_id, token_hash(SHA-256, unique), expires_at, revoked_at, created_at
 
 DBには原則としてtokenの照合用hashを保存し、平文tokenの永続化やログ出力を避ける。この方針は「tokenをDBへ保存する」要件を満たしつつ漏えい影響を抑える。
 
 ## 教材と動画
 
-- `materials`: id, slug, title, description, required_role, is_published
-- `videos`: id, material_id, title, fixture_path, duration_ms, sequence, is_published
+- `materials`: id, title, description, required_role, video_path, duration_ms, transcript_status, is_active, created_at, updated_at
 
-`fixture_path`は管理済みfixtureの識別子として扱い、利用者入力の任意ファイルパスを許可しない。
+`video_path`は`/media/demo-hair-technique.mp4`という管理済みfixture pathであり、利用者入力の任意ファイルパスを許可しない。Phase 2では動画を独立tableへ分けない。
 
 ## 字幕
 

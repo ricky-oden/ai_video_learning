@@ -1,13 +1,13 @@
-# API仕様案
+# API仕様
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-全APIは未実装。prefixは`/api/v1`とする案で、承認済み要件の範囲内で詳細設計時にschemaを固定する。
+prefixは`/api/v1`とする。認証・教材・health APIはPhase 2までに実装済みで、question run以降は未実装の設計である。
 
 ## 共通
 
 - 認証: `Authorization: Bearer <opaque-token>`
-- error envelope: `code`, `message`, `details`, `request_id`
+- error envelope: `{"error":{"code","message","field_errors","conflict"}}`
 - 外部APIは呼び出さない。
 - 404と403の情報開示方針は、教材・回答所有権を漏らさないようAPI単位で固定する。
 
@@ -15,9 +15,9 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 | method/path | role | 概要 | 要件 |
 |---|---|---|---|
-| `POST /auth/login` | 未認証 | opaque token発行 | AUTH-001 |
-| `POST /auth/logout` | 認証済み | 現token失効 | AUTH-002 |
-| `GET /auth/me` | 認証済み | userとrole取得 | AUTH-003 |
+| `POST /api/v1/auth/login` | 未認証 | opaque token発行 | AUTH-001 |
+| `POST /api/v1/auth/logout` | 認証済み | 現token失効 | AUTH-002 |
+| `GET /api/v1/auth/me` | 認証済み | userとrole取得 | AUTH-003 |
 
 `POST /auth/login` responseは`access_token`, `token_type: bearer`, `user`を返す。tokenはJWTではなく推測困難なopaque値とする。
 
@@ -25,11 +25,10 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 | method/path | role | 概要 | 要件 |
 |---|---|---|---|
-| `GET /materials` | 全role | アクセス可能教材一覧 | VID-002 |
-| `GET /materials/{material_id}` | 全role | 教材、動画、字幕状態 | VID-003 |
-| `GET /videos/{video_id}/media` | 全role | ローカルdemo media | VID-004, VID-006 |
+| `GET /api/v1/materials` | 全role | activeかつアクセス可能な教材一覧 | VID-002 |
+| `GET /api/v1/materials/{material_id}` | 全role | 教材、local動画path、字幕状態 | VID-003 |
 
-media endpointはfixtureだけを返し、任意path入力をファイルパスへ直接連結しない。
+動画はNext.jsの`public/media`配下の固定fixtureを同一originで返す。APIは任意path入力を受け付けない。
 
 ## question runとstream
 
@@ -68,7 +67,7 @@ run terminal statusは`completed`, `refused_insufficient_evidence`, `refused_out
 
 | method/path | role | 概要 | 要件 |
 |---|---|---|---|
-| `GET /admin/materials/transcript-status` | ADMIN | 字幕処理状態一覧 | ADM-001 |
+| `GET /api/v1/admin/materials` | ADMIN | 教材と`NOT_IMPORTED`状態一覧 | ADM-001 |
 | `POST /admin/videos/{video_id}/transcript-imports` | ADMIN | fixture字幕取込 | TRN-001 |
 | `GET /admin/evaluation-runs` | ADMIN | 評価run一覧 | EVAL-* |
 | `GET /admin/evaluation-runs/{id}` | ADMIN | ケース別評価結果 | EVAL-* |

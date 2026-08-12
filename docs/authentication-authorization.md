@@ -6,8 +6,9 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 - 学習用のopaque Bearer tokenを使用する。
 - ログイン時に推測困難なtokenを一度返し、DBに認証用レコードを保存する。
-- DB保存はtoken hashを基本とし、request tokenをhash化して照合する。
-- tokenには有効期限と失効日時を持たせる。
+- DBにはSHA-256 token hashだけを保存し、request tokenをhash化して照合する。
+- tokenの有効期限は発行から8時間とする。
+- 同一userの未失効sessionは1件とし、再ログイン時に旧sessionをrevokeする。
 - logoutで現在tokenを失効させる。
 - API keyや外部identity providerは使用しない。
 
@@ -21,6 +22,7 @@ frontendはtokenをlocalStorageへ保存する。これは学習用の明示的�
 - `dangerouslySetInnerHTML`を認証済みデータの表示に使用しない。
 - tokenをURL、error message、application logへ含めない。
 - logoutでlocalStorageから削除する。
+- APIが401を返した場合もlocalStorageから削除する。
 - frontend role表示を認可の根拠にしない。
 
 本番向けCookie方式への変更は初期範囲外であり、必要なら計画変更として扱う。
@@ -29,7 +31,9 @@ frontendはtokenをlocalStorageへ保存する。これは学習用の明示的�
 
 | 操作 | MEMBER | PREMIUM | ADMIN |
 |---|---:|---:|---:|
-| 教材一覧・詳細・動画 | 許可 | 許可 | 許可 |
+| MEMBER教材一覧・詳細・動画 | 許可 | 許可 | 許可 |
+| PREMIUM教材一覧・詳細・動画 | 拒否 | 許可 | 許可 |
+| ADMIN教材・字幕状態一覧 | 拒否 | 拒否 | 許可 |
 | AI question run作成 | 拒否 | 許可 | 許可 |
 | 自分のrunをstream/cancel | 拒否 | 許可 | 許可 |
 | 自分の回答を再生成 | 拒否 | 許可 | 許可 |

@@ -2,7 +2,7 @@
 
 美容師向け動画教育・AI学習支援サービスを題材に、通常の動画学習機能と、根拠付きRAGの処理境界を学ぶためのリポジトリです。
 
-現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 1のNext.js、FastAPI、PostgreSQL/pgvector、Docker Compose基盤まで実装・検証済みです。認証、動画教材、字幕、RAG、provider、streamは未実装です。
+現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 2の認証と通常動画導線まで実装・検証済みです。字幕、RAG、provider、streamは未実装です。
 
 ## 固定runtime
 
@@ -39,6 +39,16 @@ docker compose ps
 
 DB portはhostへ公開しません。開発DB `ai_video_learning`はnamed volumeへ保存されます。
 
+## Phase 2 demo
+
+```bash
+docker compose run --rm backend python -m app.seed
+```
+
+共通passwordは学習用fixtureの`Learning123!`です。emailは`member@example.com`、`premium@example.com`、`admin@example.com`、inactive確認用`inactive@example.com`です。教材と動画はリポジトリ内fixtureだけを使用します。
+
+tokenは8時間有効なopaque値で、DBにはSHA-256 hashだけを保存します。frontendは学習目的でtokenをlocalStorageへ保存するため、XSSがあるとtokenを読み取られるリスクがあります。本番用認証方式ではありません。
+
 ## test DBとbackend検証
 
 test DBはprofile付きtmpfsで、`test-db:5432/ai_video_learning_test`以外をpytestに許可しません。pytest開始時に`TEST_DATABASE_URL`を検証し、その値をアプリ本体の`DATABASE_URL`へ強制設定します。開発DBへのfallbackはありません。
@@ -68,6 +78,7 @@ docker compose exec -T frontend npm run lint
 docker compose exec -T frontend npm run format:check
 docker compose exec -T frontend npm run typecheck
 docker build --target build --tag ai-video-learning-frontend-build-audit ./frontend
+docker compose --profile e2e run --rm e2e
 ```
 
 稼働中のNext.js dev serverと同じ`.next`へproduction buildを同時出力しないため、buildは隔離したDocker build stageで検証します。

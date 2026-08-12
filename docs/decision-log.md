@@ -80,3 +80,20 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
   - frontend/backendは非root user
 - migration: Alembicでpgvector extensionを作成・削除し、業務tableは作成しない。
 - 理由: Phase 1を再現可能にし、Phase 2以降の業務機能や外部providerを混入させないため。
+
+## DEC-005: Phase 2認証・local教材実装
+
+- 日付: 2026-08-12
+- 状態: 承認・検証済み
+- 決定者: ユーザー（要件）、Codex（承認範囲内の実装詳細）
+- 認証:
+  - email unique、Argon2id password hash
+  - 32-byte相当のopaque tokenを発行し、DBにはSHA-256 hashだけを保存
+  - 有効期限8時間、同一userの未revoke sessionは1件、再login/logoutでrevoke
+  - frontend localStorage保存、Bearer自動付加、401時削除
+- 教材: `materials` tableにlocal fixture pathを保持し、MEMBER/PREMIUM/ADMINのaccessをbackendで判定する。
+- fixture: active MEMBER、active PREMIUM、inactiveの3教材と、4つのlocal demo userを冪等seedする。
+- Docker image: Playwright runner `mcr.microsoft.com/playwright:v1.58.2-noble`（digest `sha256:6446946a1d9fd62d9ae501312a2d76a43ee688542b21622056a372959b65d63d`）。
+- 追加runtime依存: argon2-cffi 25.1.0、argon2-cffi-bindings 25.1.0、cffi 2.0.0、pycparser 3.0、email-validator 2.3.0、dnspython 2.8.0。すべて`backend/requirements.txt`へ固定する。
+- 境界: `VID-005`のcitation起点E2Eと`ADM-001`の字幕version/segment/chunk/embedding状態は後続Phaseまで完成扱いにしない。
+- 外部性: dependency/image取得以外の外部通信はなく、AI・embedding・動画・字幕APIおよび従量課金は使用しない。
