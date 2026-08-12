@@ -4,6 +4,7 @@ const backendInternalUrl =
   process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8003";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["frontend"],
   reactStrictMode: true,
   async rewrites() {
     return [
