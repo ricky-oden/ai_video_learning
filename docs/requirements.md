@@ -58,7 +58,7 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### AUTH-005 管理者権限
 
-- 状態: 未実装
+- 状態: 一部実装・Phase 6検証待ち（2026-08-12、字幕取込認可のみ）
 - 要件: 字幕取込と評価結果確認はADMINだけが利用できる。
 - 受入条件: MEMBER/PREMIUMは403、ADMINだけが操作できる。
 
@@ -108,7 +108,7 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### ADM-001 教材・字幕状態確認
 
-- 状態: 一部実装・Phase 3検証待ち（2026-08-12、教材と`NOT_IMPORTED`表示のみ）
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: ADMINが教材、字幕version、segment/chunk/embedding処理状態を確認できる。
 - 受入条件: ADMIN画面/APIで成功・失敗・未処理状態を確認でき、非ADMINは403となる。
 
@@ -116,31 +116,31 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### TRN-001 字幕fixture取込
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: ADMIN操作でローカル字幕fixtureを取込み、取込結果を記録する。
 - 受入条件: 正常fixtureを再現可能に取込み、不正形式を永続化前に拒否し、処理状態を確認できる。
 
 ### TRN-002 正規化
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: 元字幕を変更せず保持し、正規化規則と版を記録して正規化テキストを作成する。
 - 受入条件: 同一入力と同一規則から同一結果が得られ、元テキストを参照できる。
 
 ### TRN-003 segment保存
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: 字幕をversion、sequence、text、start_ms、end_ms付きsegmentとして保存する。
 - 受入条件: sequenceと時刻が単調で、`0 <= start_ms < end_ms`をDB/APIで保証する。
 
 ### TRN-004 chunk作成
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: segment境界と時間範囲を追跡可能なchunkを決定論的に作成し、chunking versionを保存する。
 - 受入条件: 同一segmentと設定から同一chunkが作られ、各chunkから元segment範囲へ戻れる。
 
 ### TRN-005 字幕版の不変参照
 
-- 状態: 未実装
+- 状態: 一部実装・Phase 4検証待ち（2026-08-12、旧version保持まで）
 - 要件: 過去回答が参照した字幕versionを保持し、新version公開後も過去根拠を再現できる。
 - 受入条件: 新version追加後も既存answer citationのtext snapshot、chunk、時刻を取得できる。
 
@@ -148,25 +148,25 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### PRV-001 EmbeddingProvider分離
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: embedding生成をアプリケーションuse-caseからinterfaceで分離する。
 - 受入条件: use-caseが具体provider SDK型に依存せず、contract testを実行できる。
 
 ### PRV-002 AnswerGenerationProvider分離
 
-- 状態: 未実装
+- 状態: 一部実装・Phase 4検証待ち（2026-08-12、interfaceのみ）
 - 要件: 回答生成とstream event生成をinterfaceで分離する。
 - 受入条件: use-caseが具体provider SDK型に依存せず、contract testを実行できる。
 
 ### PRV-003 決定論的fake embedding
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: fake embeddingは固定次元で、同一の正規化入力とprovider versionから同一vectorを生成する。
 - 受入条件: 複数実行、別process、テスト環境で完全一致し、次元数がDB定義と一致する。
 
 ### PRV-004 provider metadata
 
-- 状態: 未実装
+- 状態: 一部実装・Phase 4検証待ち（2026-08-12、chunk embedding metadataのみ）
 - 要件: provider名、version、embedding次元、生成設定版を処理結果へ記録する。
 - 受入条件: 検索runと回答runから使用provider設定を追跡できる。
 
@@ -192,25 +192,25 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ### RAG-001 字幕からembeddingまで
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12）
 - 要件: 取込、正規化、segment、chunk、fake embedding、pgvector保存を順番に実行する。
 - 受入条件: 各段階の状態と件数を記録し、失敗した段階以降を公開済みにしない。
 
 ### RAG-002 質問embedding
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12、検索service境界）
 - 要件: 質問を字幕chunkと同じfake embedding空間へ変換する。
 - 受入条件: provider versionと次元が一致し、不一致時は検索せず失敗状態になる。
 
 ### RAG-003 類似検索
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12、検索service境界）
 - 要件: pgvectorにより質問に近いchunkを検索する。
 - 受入条件: 固定fixtureに対して期待chunkが設定したk以内に含まれる。
 
 ### RAG-004 検索時アクセス制御
 
-- 状態: 未実装
+- 状態: 実装・検証済み（2026-08-12、検索service境界）
 - 要件: 検索対象を公開字幕version、アクセス可能教材、認証ユーザーの権限で絞る。
 - 受入条件: アクセス不可教材のchunkが検索結果とprovider入力へ一切含まれない。
 

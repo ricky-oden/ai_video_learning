@@ -4,6 +4,8 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ## 質問処理
 
+Phase 3では質問の正規化・fake embeddingと、READY/current/認可教材に限定したpgvector検索serviceまで実装済みである。question run、検索結果保存、十分性判定、回答生成以降はPhase 4以降である。
+
 ```text
 POST question run
 → token・role検証

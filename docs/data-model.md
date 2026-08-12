@@ -2,7 +2,7 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-認証・教材tableはPhase 2で実装済み。Phase 3以降のtableは未実装である。IDはUUID、時刻はUTC、動画位置は整数millisecondで保持する。
+認証・教材・字幕・embedding tableはPhase 3までに実装済み。質問・回答以降のtableは未実装である。IDはUUID、時刻はUTC、動画位置は整数millisecondで保持する。
 
 ## 認証
 
@@ -19,18 +19,18 @@ DBには原則としてtokenの照合用hashを保存し、平文tokenの永続�
 
 ## 字幕
 
-- `transcript_versions`: id, video_id, version, source_fixture, normalization_version, status, created_by, created_at, published_at
+- `transcript_versions`: id, material_id, version, source_fixture, normalization_version, chunking_version, status, failure_code, failure_message, created_by, created_at, published_at, is_current
 - `transcript_segments`: id, transcript_version_id, sequence, original_text, normalized_text, start_ms, end_ms
-- `transcript_chunks`: id, transcript_version_id, sequence, text, first_segment_id, last_segment_id, start_ms, end_ms, chunking_version
-- `chunk_embeddings`: id, chunk_id, provider_name, provider_version, dimensions, embedding vector, created_at
+- `transcript_chunks`: id, transcript_version_id, sequence, text, first_segment_sequence, last_segment_sequence, start_ms, end_ms
+- `chunk_embeddings`: id, chunk_id, provider_name, provider_version, dimensions, embedding vector(32), created_at
 
 制約案:
 
-- `(video_id, version)` unique
+- `(material_id, version)` unique
 - `(transcript_version_id, sequence)` unique
 - `start_ms >= 0`, `end_ms > start_ms`
-- vector次元はfake provider固定次元と一致
-- 公開versionはvideoごとに一つ
+- vector次元はfake provider固定32次元と一致
+- current versionは教材ごとに一つ
 
 ## 質問、検索、回答
 

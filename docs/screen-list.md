@@ -11,7 +11,7 @@ Phase 2対象の`/login`、`/materials`、`/materials/[materialId]`、`/admin/ma
 | SCR-003 | `/materials/[materialId]` | 教材詳細・動画プレイヤー | 全role | 実装済み（citation連携は未実装） | VID-003〜VID-005 |
 | SCR-004 | `/ask` | AI質問 | PREMIUM, ADMIN | 未実装 | AUTH-004, RAG-005〜RAG-010, STR-001〜STR-006 |
 | SCR-005 | `/history` | 質問・回答履歴 | 認証済み | 未実装 | HIS-001〜HIS-003, STR-007 |
-| SCR-006 | `/admin/materials` | 教材・字幕状態 | ADMIN | 一部実装（`NOT_IMPORTED`のみ） | AUTH-005, ADM-001, TRN-001 |
+| SCR-006 | `/admin/materials` | 教材・字幕状態 | ADMIN | 実装済み | AUTH-005, ADM-001, TRN-001 |
 | SCR-007 | `/admin/evaluations` | 評価結果 | ADMIN | 未実装 | AUTH-005, EVAL-001〜EVAL-008 |
 
 ## 主要状態
@@ -37,7 +37,7 @@ Phase 2対象の`/login`、`/materials`、`/materials/[materialId]`、`/admin/ma
 
 ### 管理者画面
 
-- 教材ごとに字幕version、取込、segment、chunk、embeddingの状態と件数を表示する。
+- 教材ごとにcurrent version、取込状態、segment、chunk、embedding件数とprovider metadataを表示する。
 - 字幕fixture取込を開始できる。
 - 評価ケースとrunの指標を確認できる。
 

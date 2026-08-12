@@ -2,7 +2,7 @@
 
 PLAN_VERSION: `AI-LEARNING-V1.0`
 
-prefixは`/api/v1`とする。認証・教材・health APIはPhase 2までに実装済みで、question run以降は未実装の設計である。
+prefixは`/api/v1`とする。認証・教材・health・ADMIN字幕APIはPhase 3までに実装済みで、question run以降は未実装の設計である。
 
 ## 共通
 
@@ -67,8 +67,10 @@ run terminal statusは`completed`, `refused_insufficient_evidence`, `refused_out
 
 | method/path | role | 概要 | 要件 |
 |---|---|---|---|
-| `GET /api/v1/admin/materials` | ADMIN | 教材と`NOT_IMPORTED`状態一覧 | ADM-001 |
-| `POST /admin/videos/{video_id}/transcript-imports` | ADMIN | fixture字幕取込 | TRN-001 |
+| `GET /api/v1/admin/materials` | ADMIN | 教材、current版、状態、件数、provider一覧 | ADM-001 |
+| `POST /api/v1/admin/materials/{material_id}/transcript-imports` | ADMIN | 許可済みfixture字幕取込 | TRN-001 |
+| `GET /api/v1/admin/materials/{material_id}/transcript-versions` | ADMIN | 教材の字幕version一覧 | TRN-005 |
+| `GET /api/v1/admin/transcript-versions/{version_id}` | ADMIN | version状態・件数・provider詳細 | ADM-001 |
 | `GET /admin/evaluation-runs` | ADMIN | 評価run一覧 | EVAL-* |
 | `GET /admin/evaluation-runs/{id}` | ADMIN | ケース別評価結果 | EVAL-* |
 

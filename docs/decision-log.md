@@ -97,3 +97,18 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 - 追加runtime依存: argon2-cffi 25.1.0、argon2-cffi-bindings 25.1.0、cffi 2.0.0、pycparser 3.0、email-validator 2.3.0、dnspython 2.8.0。すべて`backend/requirements.txt`へ固定する。
 - 境界: `VID-005`のcitation起点E2Eと`ADM-001`の字幕version/segment/chunk/embedding状態は後続Phaseまで完成扱いにしない。
 - 外部性: dependency/image取得以外の外部通信はなく、AI・embedding・動画・字幕APIおよび従量課金は使用しない。
+
+## DEC-006: Phase 3字幕versionと決定論的fake embedding
+
+- 日付: 2026-08-12
+- 状態: 承認・検証済み
+- 決定者: ユーザー（固定仕様）、Codex（承認範囲内の実装詳細）
+- 字幕fixture: JSON形式、backend許可済みID mapping、MEMBER/PREMIUM正常fixtureと不正fixture。
+- 正規化: `nfkc-whitespace-v1`。NFKC、空白統一、trimだけを行いoriginal textを保持する。
+- chunk: `segment-window-3-overlap-1-v1`。最大3segment、1segment overlap、segment境界非分割。
+- embedding: `deterministic-local/hash-char-ngram-v1`、32次元。文字unigram/bigramとSHA-256固定bucketを使用し、組込み`hash()`を使用しない。
+- transaction: PROCESSING versionを先に作成し、segment/chunk/embeddingを一つのtransactionで保存する。失敗内容をrollback後、安全な別transactionでFAILEDを記録する。
+- version: 再取込は新versionとし、成功時だけcurrentを切り替える。失敗時は旧currentを維持する。
+- 検索境界: 質問を同じfake空間へ変換し、READY/current、active教材、role、指定教材をSQL条件で絞ってpgvector検索する。
+- Phase境界: AnswerGenerationProviderはinterfaceのみ。回答、十分性判定、citation、run保存、SSEは作成しない。
+- 外部性: OpenAI SDK/API keyおよび外部AI・embedding・字幕API通信はない。

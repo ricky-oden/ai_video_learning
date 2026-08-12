@@ -4,7 +4,7 @@ PLAN_VERSION: `AI-LEARNING-V1.0`
 
 ## 入力
 
-リポジトリ内の字幕fixtureだけを入力とする。外部動画・字幕API、upload service、background queue製品は使用しない。fixture形式とschemaは実装フェーズで一つに固定する。
+リポジトリ内のJSON字幕fixtureだけを入力とする。外部動画・字幕API、upload service、background queue製品は使用しない。fixture IDはbackendの許可済みmappingから解決し、任意pathとして扱わない。
 
 ## 処理順
 
@@ -27,11 +27,10 @@ ADMIN取込要求
 
 ## 正規化
 
-初期候補:
-
-- 改行・連続空白を一つの空白へ正規化
-- Unicode normalization規則を固定
-- 空segmentの除外
+- `normalization_version = nfkc-whitespace-v1`
+- Unicode NFKC
+- 改行、tab、連続空白を半角空白一つへ統一
+- 前後空白を除去
 - 元テキストは変更せず別列に保存
 
 句読点の追加、誤字訂正、複数言語変換など意味を変更し得る処理は初期範囲に含めない。正規化規則には`normalization_version`を付ける。
@@ -41,15 +40,18 @@ ADMIN取込要求
 - `sequence`で原順序を保持する。
 - `start_ms`と`end_ms`を整数で保存する。
 - `0 <= start_ms < end_ms`を必須とする。
-- 重複・隣接を許すかはfixture schema確定時に決め、テストで固定する。
+- sequenceは1から連続し、次segmentの開始は前segmentの終了以上とする。
+- 空白だけのtext、重複時間、不正時刻は全件検証後に拒否する。
 
 ## chunk
 
-- segment境界を追跡できるよう`first_segment_id`と`last_segment_id`を持つ。
+- `chunking_version = segment-window-3-overlap-1-v1`
+- 最大3segment、次chunkと1segment重複とし、segment境界を分割しない。
+- `first_segment_sequence`と`last_segment_sequence`を持つ。
 - `start_ms`は最初のsegment、`end_ms`は最後のsegmentから導出する。
 - 同一入力・設定で同じchunkになる決定論的規則を使用する。
 - chunk長、overlap、区切り規則を`chunking_version`へ対応付ける。
-- 初期値は評価fixtureを作成してから固定する。AIによる自動変更は行わない。
+- 空の末尾chunkを作らず、AIによる自動変更は行わない。
 
 ## embedding
 
@@ -60,7 +62,7 @@ ADMIN取込要求
 
 ## 管理者が確認する状態
 
-- `pending`, `processing`, `ready`, `failed`
+- `NOT_IMPORTED`, `PROCESSING`, `READY`, `FAILED`
 - segment/chunk/embedding件数
 - normalization/chunking/provider version
 - failure codeと秘密情報を含まない概要

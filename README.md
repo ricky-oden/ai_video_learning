@@ -2,7 +2,7 @@
 
 美容師向け動画教育・AI学習支援サービスを題材に、通常の動画学習機能と、根拠付きRAGの処理境界を学ぶためのリポジトリです。
 
-現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 2の認証と通常動画導線まで実装・検証済みです。字幕、RAG、provider、streamは未実装です。
+現在の計画バージョンは `AI-LEARNING-V1.0` です。Phase 3の字幕取込、決定論的fake embedding、pgvector検索境界まで実装・検証済みです。質問回答、根拠判定、citation、streamは未実装です。
 
 ## 固定runtime
 
@@ -46,6 +46,8 @@ docker compose run --rm backend python -m app.seed
 ```
 
 共通passwordは学習用fixtureの`Learning123!`です。emailは`member@example.com`、`premium@example.com`、`admin@example.com`、inactive確認用`inactive@example.com`です。教材と動画はリポジトリ内fixtureだけを使用します。
+
+ADMINは`/admin/materials`から許可済みJSON字幕fixtureを取り込めます。入力されたfixture IDはbackendの固定mappingで解決され、任意ファイルパスとして扱いません。embeddingは外部APIを使わない32次元の`deterministic-local/hash-char-ngram-v1`です。
 
 tokenは8時間有効なopaque値で、DBにはSHA-256 hashだけを保存します。frontendは学習目的でtokenをlocalStorageへ保存するため、XSSがあるとtokenを読み取られるリスクがあります。本番用認証方式ではありません。
 

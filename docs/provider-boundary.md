@@ -48,9 +48,10 @@ providerは検索、認可、十分性判定、DB保存を担当しない。
 
 ## fake provider
 
-- embeddingは安定したdigest等を材料に固定次元vectorを生成する。
+- Phase 3 embeddingは`deterministic-local/hash-char-ngram-v1`、32次元とする。
+- 正規化済み文字unigram/bigramをSHA-256で固定bucketへ割り当て、有限vectorへL2正規化する。
 - Python組込み`hash()`のようにprocessごとに変わり得るものは使用しない。
-- 回答は渡されたevidenceの文だけを決定規則で構成する。
+- 回答provider実装はPhase 4以降であり、Phase 3ではinterfaceだけを定義する。
 - citationは渡されたIDだけを返せる。
 - scenario fixtureでevent分割、遅延、途中失敗、中断点を固定できる。
 
