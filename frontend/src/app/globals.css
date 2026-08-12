@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  background: #f6f4ef;
+  color: #24211d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page-shell {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 64px 0;
+}
+
+.hero,
+.panel {
+  background: #fff;
+  border: 1px solid #ded8cf;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: #8a4e3b;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.state-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.state-message {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f2efe9;
+}
+
+.state-message--error {
+  color: #8d1b1b;
+  background: #fff0f0;
+}
