@@ -27,4 +27,20 @@ describe("video seeking", () => {
       "/media/demo-hair-technique.mp4",
     );
   });
+
+  it("seeks to a citation position after metadata loads", () => {
+    render(
+      <VideoPlayer
+        src="/media/demo-hair-technique.mp4"
+        title="citation demo"
+        initialStartMs={2400}
+      />,
+    );
+    const video = screen.getByLabelText(
+      "citation demoの動画",
+    ) as HTMLVideoElement;
+    Object.defineProperty(video, "duration", { value: 6, configurable: true });
+    fireEvent.loadedMetadata(video);
+    expect(video.currentTime).toBe(2.4);
+  });
 });
